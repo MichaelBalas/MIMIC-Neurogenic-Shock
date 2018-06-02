@@ -14,8 +14,7 @@ dfs = [df1, df2, df3, df4, df5, df6, df7]
 df_final = reduce(lambda left,right: pd.merge(left,right,on=["HADM_ID","ICUSTAY_ID"]), dfs)
 df_final.drop(columns=["ICD9_CODE","HEARTRATE_MEAN","SYSBP_MEAN"], inplace=True)
 df_final["IN_SHOCK"] = df_final["IN_SHOCK"].fillna("NA")
-df_final.drop(df_final[(df_final.AGE < 14) | (df_final.AGE > 120)].index, inplace=True)
-df_final.drop(df_final[(df_final.IN_SHOCK) == "NA"].index, inplace=True)
+df_final.drop(df_final[(df_final.AGE > 89)].index, inplace=True)
 
 ### Process the data for linear regression
 # FEMALE = 0; MALE = 1
@@ -30,15 +29,18 @@ df_final.MULTIPLE_SCI = df_final.MULTIPLE_SCI.eq(True).mul(1)
 # NO = 0; YES = 1
 df_final.EC_ES_INJURY = df_final.EC_ES_INJURY.eq('Y').mul(1)
 df_final = df_final.drop_duplicates()
+
+# C1C4, C5C7, C1C7 & MULTCERV = C; T1T6, T7T12 & T1T12 = T; L = L
+df_final.loc[df_final['SPINAL_LEVEL'].str.startswith(("C", "M")), 'SPINAL_LEVEL'] = "C"
+df_final.loc[df_final['SPINAL_LEVEL'].str.startswith("T"), 'SPINAL_LEVEL'] = "T"
+
+
 df_final.to_csv("MASTER_ORGAN_FAILURE.csv", index=False)
 
 ### Create new Master Table for Comorbidities
 df = pd.read_csv("MASTER_ORGAN_FAILURE.csv")
 cmb = pd.read_csv("../Backbone/COMORBIDITY.csv")
 
-# C1C4, C5C7, C1C7 & MULTCERV = C; T1T6, T7T12 & T1T12 = T; L = L
-df.loc[df['SPINAL_LEVEL'].str.startswith(("C", "M")), 'SPINAL_LEVEL'] = "C"
-df.loc[df['SPINAL_LEVEL'].str.startswith("T"), 'SPINAL_LEVEL'] = "T"
 df.drop(columns=["SOFA","RESPIRATION","COAGULATION","LIVER","CARDIOVASCULAR","CNS","RENAL"], inplace=True)
 
 cmb.columns = map(str.lower, cmb.columns)
