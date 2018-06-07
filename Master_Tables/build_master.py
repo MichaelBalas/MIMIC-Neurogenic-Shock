@@ -82,9 +82,10 @@ df.loc[(df.alcohol_abuse == 1), 'CMB_ALCOHOL_ABUSE'] = 1
 df.loc[((df.psychoses == 1) | (df.depression == 1)), 'CMB_MENTAL_HEALTH'] = 1
 
 # Drop comorbidity columns ([17-47})
-df.drop(df.columns[17:47], axis=1, inplace=True)
+df.drop(df.loc[:,"congestive_heart_failure":"depression"], axis=1, inplace=True)
 
 df.fillna(0, inplace=True)
+
 df.to_csv("MASTER_TABLE.csv", index=False)
 
 
