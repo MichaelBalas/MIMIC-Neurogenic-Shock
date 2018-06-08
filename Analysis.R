@@ -1,5 +1,7 @@
 library(bnlearn)
 library(Rgraphviz)
+library(fmsb)
+library(pROC)
 
 data <- read.csv("Master_Tables/MASTER_TABLE.csv", header=TRUE)
 no_shock_data = (subset(data, data$IN_SHOCK == 0))
@@ -13,6 +15,51 @@ summary(fit_dead)
 fit_los = glm(formula = LOS_ICU ~ . - HADM_ID - ICUSTAY_ID - LOS_HOSPITAL - DEAD - IN_SHOCK - 
                 MULTIPLE_SCI - COMORBIDITIES, family = gaussian, data=shock_data)
 summary(fit_los)
+
+
+## --- NAGELKERKE R^2 RANKING --- ##
+total_nagel = NagelkerkeR2(fit_dead)[["R2"]]
+delta_nagel <- list(((total_nagel - NagelkerkeR2(update(fit_dead, . ~ . -AGE))[["R2"]])/total_nagel)*100)
+delta_nagel <- append(delta_nagel, ((total_nagel - NagelkerkeR2(update(fit_dead, . ~ . -GENDER))[["R2"]])/total_nagel)*100)
+delta_nagel <- append(delta_nagel, ((total_nagel - NagelkerkeR2(update(fit_dead, . ~ . -RESPIRATION))[["R2"]])/total_nagel)*100)
+delta_nagel <- append(delta_nagel, ((total_nagel - NagelkerkeR2(update(fit_dead, . ~ . -RENAL))[["R2"]])/total_nagel)*100)
+delta_nagel <- append(delta_nagel, ((total_nagel - NagelkerkeR2(update(fit_dead, . ~ . -LIVER))[["R2"]])/total_nagel)*100)
+delta_nagel <- append(delta_nagel, ((total_nagel - NagelkerkeR2(update(fit_dead, . ~ . -COAGULATION))[["R2"]])/total_nagel)*100)
+delta_nagel <- append(delta_nagel, ((total_nagel - NagelkerkeR2(update(fit_dead, . ~ . -CNS))[["R2"]])/total_nagel)*100)
+delta_nagel <- append(delta_nagel, ((total_nagel - NagelkerkeR2(update(fit_dead, . ~ . -SPINAL_LEVEL))[["R2"]])/total_nagel)*100)
+delta_nagel <- append(delta_nagel, ((total_nagel - NagelkerkeR2(update(fit_dead, . ~ . -EC_ES_INJURY))[["R2"]])/total_nagel)*100)
+delta_nagel <- append(delta_nagel, ((total_nagel - NagelkerkeR2(update(fit_dead, . ~ . -GCS))[["R2"]])/total_nagel)*100)
+
+delta_nagel <- append(delta_nagel, ((total_nagel - NagelkerkeR2(update(fit_dead, . ~ . -CMB_CARDIOVASCULAR))[["R2"]])/total_nagel)*100)
+delta_nagel <- append(delta_nagel, ((total_nagel - NagelkerkeR2(update(fit_dead, . ~ . -CMB_LIVER.COAG))[["R2"]])/total_nagel)*100)
+delta_nagel <- append(delta_nagel, ((total_nagel - NagelkerkeR2(update(fit_dead, . ~ . -CMB_PULMONARY))[["R2"]])/total_nagel)*100)
+delta_nagel <- append(delta_nagel, ((total_nagel - NagelkerkeR2(update(fit_dead, . ~ . -CMB_DIABETES))[["R2"]])/total_nagel)*100)
+delta_nagel <- append(delta_nagel, ((total_nagel - NagelkerkeR2(update(fit_dead, . ~ . -CMB_FLUID_ELECTROLYTE))[["R2"]])/total_nagel)*100)
+delta_nagel <- append(delta_nagel, ((total_nagel - NagelkerkeR2(update(fit_dead, . ~ . -CMB_OTHER))[["R2"]])/total_nagel)*100)
+delta_nagel <- append(delta_nagel, ((total_nagel - NagelkerkeR2(update(fit_dead, . ~ . -CMB_ALCOHOL_ABUSE))[["R2"]])/total_nagel)*100)
+delta_nagel <- append(delta_nagel, ((total_nagel - NagelkerkeR2(update(fit_dead, . ~ . -CMB_MENTAL_HEALTH))[["R2"]])/total_nagel)*100)
+
+
+total_nagel2 = NagelkerkeR2(fit_los)[["R2"]]
+delta_nagel2 <- list(((total_nagel2 - NagelkerkeR2(update(fit_los, . ~ . -AGE))[["R2"]])/total_nagel2)*100)
+delta_nagel2 <- append(delta_nagel2, ((total_nagel2 - NagelkerkeR2(update(fit_los, . ~ . -GENDER))[["R2"]])/total_nagel2)*100)                 
+delta_nagel2 <- append(delta_nagel2, ((total_nagel2 - NagelkerkeR2(update(fit_los, . ~ . -RESPIRATION))[["R2"]])/total_nagel2)*100)
+delta_nagel2 <- append(delta_nagel2, ((total_nagel2 - NagelkerkeR2(update(fit_los, . ~ . -RENAL))[["R2"]])/total_nagel2)*100)
+delta_nagel2 <- append(delta_nagel2, ((total_nagel2 - NagelkerkeR2(update(fit_los, . ~ . -LIVER))[["R2"]])/total_nagel2)*100)
+delta_nagel2 <- append(delta_nagel2, ((total_nagel2 - NagelkerkeR2(update(fit_los, . ~ . -COAGULATION))[["R2"]])/total_nagel2)*100)
+delta_nagel2 <- append(delta_nagel2, ((total_nagel2 - NagelkerkeR2(update(fit_los, . ~ . -CNS))[["R2"]])/total_nagel2)*100)
+delta_nagel2 <- append(delta_nagel2, ((total_nagel2 - NagelkerkeR2(update(fit_los, . ~ . -SPINAL_LEVEL))[["R2"]])/total_nagel2)*100)
+delta_nagel2 <- append(delta_nagel2, ((total_nagel2 - NagelkerkeR2(update(fit_los, . ~ . -EC_ES_INJURY))[["R2"]])/total_nagel2)*100)
+delta_nagel2 <- append(delta_nagel2, ((total_nagel2 - NagelkerkeR2(update(fit_los, . ~ . -GCS))[["R2"]])/total_nagel2)*100)
+
+delta_nagel2 <- append(delta_nagel2, ((total_nagel2 - NagelkerkeR2(update(fit_los, . ~ . -CMB_CARDIOVASCULAR))[["R2"]])/total_nagel2)*100)
+delta_nagel2 <- append(delta_nagel2, ((total_nagel2 - NagelkerkeR2(update(fit_los, . ~ . -CMB_LIVER.COAG))[["R2"]])/total_nagel2)*100)
+delta_nagel2 <- append(delta_nagel2, ((total_nagel2 - NagelkerkeR2(update(fit_los, . ~ . -CMB_PULMONARY))[["R2"]])/total_nagel2)*100)
+delta_nagel2 <- append(delta_nagel2, ((total_nagel2 - NagelkerkeR2(update(fit_los, . ~ . -CMB_DIABETES))[["R2"]])/total_nagel2)*100)
+delta_nagel2 <- append(delta_nagel2, ((total_nagel2 - NagelkerkeR2(update(fit_los, . ~ . -CMB_FLUID_ELECTROLYTE))[["R2"]])/total_nagel2)*100)
+delta_nagel2 <- append(delta_nagel2, ((total_nagel2 - NagelkerkeR2(update(fit_los, . ~ . -CMB_OTHER))[["R2"]])/total_nagel2)*100)
+delta_nagel2 <- append(delta_nagel2, ((total_nagel2 - NagelkerkeR2(update(fit_los, . ~ . -CMB_ALCOHOL_ABUSE))[["R2"]])/total_nagel2)*100)
+delta_nagel2 <- append(delta_nagel2, ((total_nagel2 - NagelkerkeR2(update(fit_los, . ~ . -CMB_MENTAL_HEALTH))[["R2"]])/total_nagel2)*100)
 
 
 ## --- BAYESIAN NETWORKS --- ##
