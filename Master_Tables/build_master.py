@@ -73,7 +73,7 @@ df.loc[((df.diabetes_uncomplicated == 1) | (df.diabetes_complicated == 1)), 'CMB
 df.loc[((df.fluid_electrolyte == 1) | (df.renal_failure == 1)), 'CMB_FLUID_ELECTROLYTE'] = 1
 
 # Other: (Hypothyroidism, Peptic ulcer, Aids, Lymphoma, Rheumatoid arthritis, Obesity, Weight loss, Drug abuse, Psychoses, Depression)
-df.loc[((df.hypothyroidism == 1) | (df.peptic_ulcer == 1) | (df.aids == 1) | (df.lymphoma == 1) | (df.rheumatoid_arthritis == 1) | (df.obesity == 1) | (df.weight_loss == 1) | (df.drug_abuse == 1) | (df.psychoses == 1) | (df.solid_tumor == 1) | (df.metastatic_cancer == 1) | (df.depression == 1)), 'CMB_OTHER'] = 1
+df.loc[((df.hypothyroidism == 1) | (df.peptic_ulcer == 1) | (df.aids == 1) | (df.lymphoma == 1) | (df.rheumatoid_arthritis == 1) | (df.obesity == 1) | (df.weight_loss == 1) | (df.drug_abuse == 1) | (df.solid_tumor == 1) | (df.metastatic_cancer == 1)), 'CMB_OTHER'] = 1
 
 # ALCOHOL ABUSE
 df.loc[(df.alcohol_abuse == 1), 'CMB_ALCOHOL_ABUSE'] = 1

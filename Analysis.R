@@ -12,7 +12,7 @@ summary(fit_dead)
 
 fit_los = glm(formula = LOS_ICU ~ . - HADM_ID - ICUSTAY_ID - LOS_HOSPITAL - DEAD - IN_SHOCK - 
                 MULTIPLE_SCI - COMORBIDITIES, family = gaussian, data=shock_data)
-summary(fit_dead)
+summary(fit_los)
 
 
 ## --- BAYESIAN NETWORKS --- ##
