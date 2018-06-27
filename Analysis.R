@@ -138,7 +138,7 @@ bn_death$AGE = cut(bn_death$AGE, breaks=c(0,50,70,90), right=FALSE, labels=FALSE
 bn_death = as.data.frame(lapply(bn_death, as.factor))
 res.hc = hc(bn_death)
 display_bn(res.hc)
-compute_strength(res.hc, bn_death, "BA_death.tsv")
+compute_strength(res.hc, bn_death, "BN_death.tsv")
 
 bn_los = data.frame(subset(data, data$IN_SHOCK == 1, select = -c(HADM_ID,ICUSTAY_ID,LOS_HOSPITAL,
                                                                    DEAD,IN_SHOCK,MULTIPLE_SCI,COMORBIDITIES)))
@@ -151,7 +151,7 @@ bn_los <- bn_los[, c("LOS_ICU", setdiff(names(bn_los), "LOS_ICU"))]
 bn_los = as.data.frame(lapply(bn_los, as.factor))
 res.hc = hc(bn_los)
 display_bn(res.hc)
-compute_strength(res.hc, bn_los, "BA_LOS_ICU.tsv")
+compute_strength(res.hc, bn_los, "BN_LOS_ICU.tsv")
 
 ## --- Correlation Matrix --- ##
 corr_data = data.frame(subset(data, data$IN_SHOCK == 1))
