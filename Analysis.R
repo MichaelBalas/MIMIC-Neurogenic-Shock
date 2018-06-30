@@ -153,12 +153,11 @@ res.hc = hc(bn_los)
 display_bn(res.hc)
 compute_strength(res.hc, bn_los, "BN_LOS_ICU.tsv")
 
-## --- Correlation Matrix --- ##
+## --- Data Dichotomization for RR correlation matrix --- ##
 corr_data = data.frame(subset(data, data$IN_SHOCK == 1))
 corr_data <- subset(corr_data, select = -c(HADM_ID, ICUSTAY_ID, LOS_HOSPITAL, 
                                            MULTIPLE_SCI, IN_SHOCK, COMORBIDITIES))
 
-# Data Dichotomization for RR correlation matrix
 # (all data is converted to character and then to numeric as the factor type cannot be used)
 # Note that the middle value in these cuts is not left-inclusive (i.e. (0,3,99) means 0-2 and 3-4 for SOFA)
 corr_data$LOS_ICU = as.numeric(as.character(cut(corr_data$LOS_ICU, breaks=c(0,2,99), right=FALSE, labels=c(0,1))))
@@ -171,13 +170,16 @@ corr_data$LIVER = as.numeric(as.character(cut(corr_data$LIVER, breaks=c(0,3,99),
 corr_data$GCS = as.numeric(as.character(cut(corr_data$GCS, breaks=c(0,4,99), right=FALSE, labels=c(0,1))))
 corr_data$SPINAL_LEVEL = as.numeric(as.character(cut(as.numeric(corr_data$SPINAL_LEVEL), breaks=c(0,2,99), right=FALSE, labels=c(1,0))))
 
-
-s = matrix(ncol = 19, nrow = 19)
-rownames(s) = c(names(corr_data))
-colnames(s) = c(names(corr_data))
+## --- Co-Occurance Matrix --- ##
+# Relative Risk Co-Occurance Matrix
 rr = matrix(ncol = 19, nrow = 19)
 rownames(rr) = c(names(corr_data))
 colnames(rr) = c(names(corr_data))
+# Prevalence Matrix
+s = matrix(ncol = 19, nrow = 19)
+rownames(s) = c(names(corr_data))
+colnames(s) = c(names(corr_data))
+
 for (i in 1:ncol(corr_data)){
   for (j in 1:ncol(corr_data)){
     s[i,j] = count(corr_data[,i] & corr_data[,j] == 1)[,2][2]
@@ -195,12 +197,11 @@ for (i in 1:ncol(corr_data)){
 }
 
 names1 = NULL
-for (m in 1:19) {
-  names1 = c(names1,rep(rownames(rr)[m],19)) 
+for (i in 1:19) {
+  names1 = c(names1,rep(rownames(rr)[i],19)) 
   names2 = c(rep(rownames(rr),19))
 }
 
-#rr1 = NULL
 rr = cbind(names1, names2, as.numeric(as.vector(rr)))
 
 index = numeric()
@@ -227,10 +228,14 @@ for (i in 1:(nrow(rr)-1)){
 }
 # Removes all duplicate edge rows by index
 rr = rr[-c(index), ]
+# Convert all NAs to zero
+rr[is.na(rr)] <- 0
 
 # For Cytoscape
-colnames(rr) <- c("Source", "Target", "Interaction")  # Rename columns
-rr = rr[,c("Source", "Interaction", "Target")]  # Rearrange now renamed columns
+colnames(rr) <- c("Source", "Target", "Strength")  # Rename columns
+rr = rr[,c("Source", "Strength", "Target")]  # Rearrange now renamed columns
 
-write.csv(rr, file = "rr.csv",row.names=FALSE)
-write.csv(diag(s), file = "prevalence.csv")
+rr = as.data.frame(rr)
+
+write.table(rr, file = "rr.tsv",quote=FALSE, sep='\t', row.names = FALSE)
+write.table(diag(s), file = "prevalence.tsv",quote=FALSE, sep='\t', row.names = TRUE)
