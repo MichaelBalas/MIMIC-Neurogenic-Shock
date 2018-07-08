@@ -71,6 +71,41 @@ auc_ranking <- function(model, predictors){
 sorted_death_predictors = sort(auc_ranking(fit_dead, predictors))
 sorted_los_predictors = sort(auc_ranking(fitdi_los, predictors))
 
+
+#############################################
+# Updated version of Sparse Model Creation
+# Computing new AUC ranking at each step
+model = fitdi_los ### Parameter
+predictors = names(sorted_los_predictors) ### Parameter
+lhs_formula = toString(rlang::f_lhs(model$formula))
+model_name = "fitdi_los" ### Parameter
+formula = as.formula(paste(lhs_formula, " ~ predict(", model_name, ")",sep=""))
+old_model = model
+old_roc = roc(formula, data=model$data)
+delong_pvalues = numeric()
+print("Complete Model")
+print(old_roc$auc)
+print(ci(old_roc$auc))
+print("delong p-value: NA")
+temp = predictors
+for (i in 1:(length(predictors)-1)){
+  rhs_formula = as.formula(paste("~ . -", temp[1]))
+  new_model = update(old_model, rhs_formula)
+  new_formula = as.formula(paste(lhs_formula, " ~ predict(new_model)",sep=""))
+  new_roc = roc(new_formula, data=model$data)
+  p_value = (roc.test(old_roc, new_roc, method = "delong"))$p.value
+  delong_pvalues = c(delong_pvalues, p_value)
+  new_pred = sort(auc_ranking(new_model, temp[-1]))
+  print(paste("Dropped variable: ", temp[1]))
+  temp = names(new_pred)
+  print(new_roc$auc)
+  print(paste("delong p-value: ",p_value))
+  print(ci(new_roc$auc))
+  old_model = new_model
+  old_roc = new_roc
+}
+#####################################
+
 ## --- DeLong Model Selection --- ##
 delong_selection <- function(model, predictors){
   lhs_formula = toString(rlang::f_lhs(model$formula))
@@ -79,24 +114,19 @@ delong_selection <- function(model, predictors){
   old_model = model
   old_roc = roc(formula, data=model$data)
   delong_pvalues = numeric()
-  print("Complete Model")
-  print(old_roc$auc)
-  print(paste("delong p-value: NA"))
   for (predictor in predictors){
     rhs_formula = as.formula(paste("~ . -", predictor))
     new_model = update(old_model, rhs_formula)
     new_formula = as.formula(paste(lhs_formula, " ~ predict(new_model)",sep=""))
     new_roc = roc(new_formula, data=model$data)
-    p_value = (roc.test(old_roc, new_roc, method = "delong"))$p.value #are they paired or not?
-    #p_value = temp$p.value
+    p_value = (roc.test(old_roc, new_roc, method = "delong"))$p.value
+    print(predictor)
+    print(p_value)
     delong_pvalues = c(delong_pvalues, p_value)
     old_model = new_model
     old_roc = new_roc
-    print(paste("Dropped variable: ", predictor))
-    print(old_roc$auc)
-    print(paste("delong p-value: ",p_value))
   }
-  #return(delong_pvalues)
+  return(delong_pvalues)
 }
 
 delong_selection(fit_dead, names(sorted_death_predictors))
