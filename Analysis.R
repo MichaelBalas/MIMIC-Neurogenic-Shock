@@ -202,11 +202,11 @@ corr_data$SPINAL_LEVEL = as.numeric(as.character(cut(as.numeric(corr_data$SPINAL
 
 ## --- Co-Occurance Matrix --- ##
 # Relative Risk Co-Occurance Matrix
-rr = matrix(ncol = 19, nrow = 19)
+rr = matrix(ncol = length(corr_data), nrow = length(corr_data))
 rownames(rr) = c(names(corr_data))
 colnames(rr) = c(names(corr_data))
 # Prevalence Matrix
-s = matrix(ncol = 19, nrow = 19)
+s = matrix(ncol = length(corr_data), nrow = length(corr_data))
 rownames(s) = c(names(corr_data))
 colnames(s) = c(names(corr_data))
 
@@ -228,8 +228,8 @@ for (i in 1:ncol(corr_data)){
 
 names1 = NULL
 for (i in 1:19) {
-  names1 = c(names1,rep(rownames(rr)[i],19)) 
-  names2 = c(rep(rownames(rr),19))
+  names1 = c(names1,rep(rownames(rr)[i],length(corr_data))) 
+  names2 = c(rep(rownames(rr),length(corr_data)))
 }
 
 rr = cbind(names1, names2, as.numeric(as.vector(rr)))
